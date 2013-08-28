@@ -18,6 +18,8 @@ module ArduinoFirmata
       @parsing_sysex = false
       @sysex_bytes_read = 0
 
+      @is_new_arduino = serial_name.match(/(usbmodem|ACM)/i)
+
       @digital_output_data = Array.new(16, 0)
       @digital_input_data = Array.new(16, 0)
       @analog_input_data = Array.new(16, 0)
@@ -26,7 +28,10 @@ module ArduinoFirmata
 
       @serial = SerialPort.new(serial_name, params[:bps], params[:bit], params[:stopbit], params[:parity])
       @serial.read_timeout = 1000
-      sleep 3
+
+      sleep 3 unless @is_new_arduino
+      sleep 1 if @is_new_arduino
+
       @status = Status::OPEN
 
       at_exit do
@@ -57,7 +62,7 @@ module ArduinoFirmata
         sleep 0.5
         break if @version
       end
-      sleep 0.5
+      sleep 0.5 unless @is_new_arduino
     end
 
     def run(&block)
